@@ -4,37 +4,42 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    // Checkout code from Git
-                    checkout scm
-                }
+                checkout scm
             }
         }
 
         stage('Build') {
             steps {
+                // Use Maven wrapper if available
                 script {
-                    // Build your application (e.g., Maven, npm)
-                    sh 'mvn clean package'
+                    def mvnCmd = bat(script: 'mvnw -v', returnStatus: true)
+                    if (mvnCmd == 0) {
+                        sh './mvnw clean package'
+                    } else {
+                        sh 'mvn clean package'
+                    }
                 }
             }
         }
 
         stage('Test') {
             steps {
+                // Use Maven wrapper if available
                 script {
-                    // Run tests
-                    sh 'mvn test'
+                    def mvnCmd = bat(script: 'mvnw -v', returnStatus: true)
+                    if (mvnCmd == 0) {
+                        sh './mvnw test'
+                    } else {
+                        sh 'mvn test'
+                    }
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                script {
-                    // Deploy your application (e.g., copy files, deploy to server)
-                    sh './deploy.sh'
-                }
+                // Use platform-independent script execution
+                bat './deploy.bat'
             }
         }
     }
